@@ -88,16 +88,14 @@ class Shopz {
 
         const partialbody: string = body.substring(body.indexOf('Order Information'),
             body.indexOf('Hardware Systems selected by User'));
-        /** parse countrval more 706 - France */
+       
         mailbody.countryVal = this.parseEmail('Country', partialbody);
-        /** countryCode = 706 */
+       
         mailbody.countryCode = mailbody.countryVal.substring(0, mailbody.countryVal.indexOf('-')).trim();
-        /** countryName = France
-         *  adding a fix for israel who uses for shopz a different ccode
-         */
+        
 
         if (mailbody.countryCode === '724') {
-            /** check if the subject contains parenthesis for Germany */
+     
             if (subject.indexOf('(') > -1) {
                 let ch_start: number;
                 let ch_end: number;
@@ -113,13 +111,13 @@ class Shopz {
         }
 
         mailbody.countryName = mailbody.countryVal.substring((mailbody.countryVal.indexOf('-') + 1), mailbody.countryVal.length).trim();
-        /** custArrDate or Due Date = April 20, 2017 */
+ 
 
         mailbody.custArrDate = this.parseEmail('Customer Arrival Date', partialbody);
-        /** customer number */
+      
         mailbody.custNoVal = this.parseEmail('Customer Number', partialbody);
 
-        /** customer name retrieved from CMR table in ESW#CMR */
+        
         const r_customerName: ICustData[] = await cmrSQL
             .queryCMR(mailbody.custNoVal, mailbody.countryCode)
             .catch((err: Error) => {
@@ -155,7 +153,7 @@ class Shopz {
             strCMRMarket = r_customerName[0].market;
         }
 
-        /** currency retrieved from ${utils.Env.k8_db2schema}.ENV#ORG */
+   
         let strISO: string;
         let strMarket: string;
         let strCurr: string;
@@ -222,35 +220,7 @@ class Shopz {
         };
 
         shopzbodytoMQ.id = insertParams.ID;
-        /** Germany cc = 724 */
-        if (mailbody.countryCode === '724') {
-            const requestid: any = await requestSQL.searchShopzReq(mailbody.reqValue)
-                .catch((err: Error) => this.logError(err));
-            /** Germany shopz not yet created */
-            if (requestid[0] === undefined) {
-                try {
-                    await requestSQL.insertRequest(insertParams);
-                } catch (error) {
-                    return this.logError(error);
-                }
-                try {
-                    await requestSQL.insertReqUsers(insertParams.ID, insertParams.TRANSID, insertParams.REQNAME, insertParams.REQEMAIL);
-                } catch (error) {
-                    return this.logError(error);
-                }
-                try {
-                    await customformfn.insertShopzCustomForm(insertParams, insertParams.TRANSID, from, subject, htmlbody, mailtransid);
-                } catch (error) {
-                    return this.logError(error);
-                }
-                try {
-                    await attachEmail.attachEmailCloudant(mailtransid, from, subject, htmlbody, mailtransid);
-                } catch (error) {
-                    return this.logError(error);
-                }
-                sendmailflag = 'true';
-            }
-        } else {
+       
             try {
                 await requestSQL.insertRequest(insertParams);
             } catch (error) {
@@ -275,7 +245,7 @@ class Shopz {
                 return this.toMQ(shopzbodytoMQ);
             }
             sendmailflag = 'true';
-        }
+        
         /*tslint:disable-next-line:cyclomatic-complexity*/
         let annotation: string | IAnnotation = '';
         if (mailtype === 'incoming mail') {
