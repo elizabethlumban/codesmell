@@ -75,24 +75,11 @@ class Lmfs {
         Lbody.machineserialno = this.parseEmail(this.mactype, partialBody);
         const serialmodeltype: string = `${Lbody.machinetypemodel}${Lbody.machineserialno}`;
         
-        const ccarray: any[] = ['702', '706', '708', '865', '866', 'FI', 'FR', 'SI', 'EG', 'GB'];
-        const r_envOrg: any = (indexOf(ccarray, Lbody.countryCode) > -1)
-            ? Lbody.countryCode.match(/^[0-9]+$/) === null
-                ? await envOrgSQL.getCurrIsoMarketByName(Lbody.countryCode, Lbody.countryName)
-                    .catch((err: Error) => this.logError(err))
-                : await envOrgSQL.getCurrIsoMarketCCByName(Lbody.countryCode, Lbody.countryName)
-                    .catch((err: Error) => this.logError(err))
-            : Lbody.countryCode.match(/^[0-9]+$/) === null
-                ? await envOrgSQL.getCurrIsoMarketByIso(Lbody.countryCode)
-                    .catch((err: Error) => this.logError(err))
-                : await envOrgSQL.getCurrIsoMarketByCC(Lbody.countryCode)
-                    .catch((err: Error) => this.logError(err));
+      
+    
+        const f_countryCode: string = Lbody.countryCode;
 
-        const f_countryCode: string = Lbody.countryCode.match(/^[0-9]+$/) === null
-            ? r_envOrg[0].ccode.trim()
-            : Lbody.countryCode;
 
-        /** get customer id and name in ${utils.Env.k8_db2schema}.ESW#CMR table */
         const r_customerName: any = await cmrSQL.queryCMR(Lbody.custNoVal, f_countryCode)
             .catch((err: Error) => this.logError(err));
 
@@ -200,11 +187,7 @@ class Lmfs {
             insertParams.ID = msgtransid;
             Lbody.id = insertParams.ID;
 
-            /** For US/CANADA insert as completed */
-            if (f_countryCode === '897' || f_countryCode === '649' || insertParams.ISO === 'US' || insertParams.ISO === 'CA') {
-                insertParams.STATUS = 'Completed';
-                insertParams.OWNERGR = 'SYSTEM';
-            }
+         
 
             await requestSQL
                 .insertReqLMFS(insertParams, 'lmfs')
@@ -212,12 +195,9 @@ class Lmfs {
                     requestSQL
                         .insertReqUsers(insertParams.ID, insertParams.TRANSID, insertParams.REQNAME, insertParams.REQEMAIL)
                         .then(() => {
-                            if (f_countryCode === '897' || f_countryCode === '649' ||
-                                insertParams.ISO === 'US' || insertParams.ISO === 'CA') {
-                                //`skip ES creation for US and CA
-                            } else {
+                           
                                 this.toMQ(Lbody);
-                            }
+                            
                         })
                         .catch((err: Error) => this.logError(err));
                 })
@@ -281,7 +261,7 @@ class Lmfs {
                         : (Math.min(...arrReqValue) === 4)
                             ? 'LMS Accepted'
                             : (Math.min(...arrReqValue) === 5)
-                                ? 'LMS Submmited'
+                                ? 'LMS Submitted'
                                 : '';
 
             const updateParams: IUpdateRequest = {
