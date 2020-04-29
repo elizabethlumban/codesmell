@@ -1,0 +1,11 @@
+*.pug.ts
+.DS_Store
+/app
+/docs
+/public/js/
+/server
+node_modules/
+package-lock.json
+env.json
+env_prod.json
+local/

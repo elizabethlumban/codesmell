@@ -1,0 +1,9 @@
+node_modules
+src
+false
+tests
+/tests-compiled
+npm-debug.log
+.vscode
+.dockerignore
+Dockerfile

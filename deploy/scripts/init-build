@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+BUILD_DIR=/tmp/build
+
+echo "aiw-batch init build running..."
+
+# Copy all necessary resrouces to $BUILD_DIR which are needed for the Dockerfile
+
+cp ./deploy/Dockerfile $BUILD_DIR
+cp ./deploy/deployment.yaml $BUILD_DIR
+cp ./deploy/config.yaml.template $BUILD_DIR/config.yaml
+
+cp package.json $BUILD_DIR
+cp package-lock.json $BUILD_DIR
+cp -r public $BUILD_DIR/public
+cp -r server $BUILD_DIR/server
+
+printf "%b\n\n" "aiw-batch init build completed"
